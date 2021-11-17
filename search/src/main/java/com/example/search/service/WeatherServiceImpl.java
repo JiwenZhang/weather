@@ -1,9 +1,13 @@
 package com.example.search.service;
 
 
+import com.example.search.config.DetailConfig;
 import com.example.search.config.EndpointConfig;
 import com.example.search.pojo.City;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -11,12 +15,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class WeatherServiceImpl implements WeatherService{
 
     private final RestTemplate restTemplate;
-
+    private static Logger log = LoggerFactory.getLogger(WeatherServiceImpl.class);
 
     public WeatherServiceImpl(RestTemplate getRestTemplate) {
         this.restTemplate = getRestTemplate;
@@ -25,14 +33,7 @@ public class WeatherServiceImpl implements WeatherService{
     @Override
     @Retryable(include = IllegalAccessError.class)
     public List<Integer> findCityIdByName(String city) {
-        City[] cities = restTemplate.getForObject(EndpointConfig.queryWeatherByCity + city, City[].class);
-        List<Integer> ans = new ArrayList<>();
-        for(City c: cities) {
-            if(c != null && c.getWoeid() != null) {
-                ans.add(c.getWoeid());
-            }
-        }
-        return ans;
+        return restTemplate.getForObject(DetailConfig.queryIdByName + city, List.class);
     }
 
     @Override
@@ -40,6 +41,24 @@ public class WeatherServiceImpl implements WeatherService{
         Map<String, Map> ans = restTemplate.getForObject(EndpointConfig.queryWeatherById + id, HashMap.class);
         return ans;
     }
+
+    @Async("threadPoolTaskExecutor")
+    @Override
+    @Retryable(include = IllegalAccessError.class)
+    public CompletableFuture<Map<String, Map>> asyncWeatherService(String city) {
+        log.info("asyncWeatherService starts");
+        // assume there is no empty list
+        List<Integer> res = findCityIdByName(city);
+        Integer targetId = res.iterator().next();
+        log.info(city + "'s id, {}", targetId);
+
+        Map<String, Map> ans = findCityNameById(targetId);
+        log.info(city + "'s weather data completed");
+
+        //log.info(city + " --> " + ans.toString());
+        return CompletableFuture.completedFuture(ans);
+    }
+
 }
 
 

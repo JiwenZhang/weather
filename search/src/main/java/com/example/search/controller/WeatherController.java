@@ -30,7 +30,8 @@ public class WeatherController {
 
     @GetMapping("/weather")
     public ResponseEntity<?> queryWeatherByCity(@RequestParam(required = true) String city) {
-        return new ResponseEntity<>(weatherService.findCityIdByName(city), HttpStatus.OK);
+        //return new ResponseEntity<>(weatherService.findCityIdByName(city), HttpStatus.OK);
+        return new ResponseEntity<>(weatherService.asyncWeatherService(city), HttpStatus.OK);
     }
 
 
@@ -43,4 +44,5 @@ public class WeatherController {
     public ResponseEntity<?> queryWeatherByCity() {
         return new ResponseEntity<>("weather service + " + randomServerPort, HttpStatus.OK);
     }
+
 }
