@@ -16,6 +16,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +27,14 @@ import org.slf4j.LoggerFactory;
 public class WeatherServiceImpl implements WeatherService{
 
     private final RestTemplate restTemplate;
+    private final Executor executor;
+
     private static Logger log = LoggerFactory.getLogger(WeatherServiceImpl.class);
 
-    public WeatherServiceImpl(RestTemplate getRestTemplate) {
+    @Autowired
+    public WeatherServiceImpl(RestTemplate getRestTemplate, Executor executor) {
         this.restTemplate = getRestTemplate;
+        this.executor = executor;
     }
 
     @Override
@@ -42,10 +49,11 @@ public class WeatherServiceImpl implements WeatherService{
         return ans;
     }
 
-    @Async("threadPoolTaskExecutor")
+    //@Async("threadPoolTaskExecutor")
     @Override
     @Retryable(include = IllegalAccessError.class)
-    public CompletableFuture<Map<String, Map>> asyncWeatherService(String city) {
+    public Map<String, Map> asyncWeatherService(String city) {
+        /*
         log.info("asyncWeatherService starts");
         // assume there is no empty list
         List<Integer> res = findCityIdByName(city);
@@ -57,6 +65,18 @@ public class WeatherServiceImpl implements WeatherService{
 
         //log.info(city + " --> " + ans.toString());
         return CompletableFuture.completedFuture(ans);
+         */
+
+        log.info("asyncWeatherService starts");
+        // assume there is no empty list
+        List<Integer> res = findCityIdByName(city);
+        log.info("find " + city + "'s city id");
+        Integer id = res.iterator().next();
+        CompletableFuture<Map<String, Map>> cf = CompletableFuture.supplyAsync(()-> {
+            log.info("find " + city + "'s weather data");
+            return findCityNameById(id);
+        }, executor);
+        return cf.join();
     }
 
 }

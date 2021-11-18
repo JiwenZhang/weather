@@ -25,6 +25,7 @@ public class TestAsyncController {
     @GetMapping("/weather/testAsync")
     public void testAsync() throws ExecutionException, InterruptedException {
         log.info("testAsync Start");
+        /*
         CompletableFuture<Map<String, Map>> ans1 = weatherService.asyncWeatherService("beijing");
         CompletableFuture<Map<String, Map>> ans2 = weatherService.asyncWeatherService("chicago");
         CompletableFuture<Map<String, Map>> ans3 = weatherService.asyncWeatherService("houston");
@@ -33,5 +34,6 @@ public class TestAsyncController {
         log.info("beijing --> " + ans1.get());
         log.info("chicago --> " + ans2.get());
         log.info("houston --> " + ans3.get());
+         */
     }
 }
