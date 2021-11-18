@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @ComponentScan(basePackages = {"com.example.common", "com.example.search"})
 @SpringBootApplication
 @EnableEurekaClient
-@EnableAsync
+//@EnableAsync
 public class SearchApplication {
 
     public static void main(String[] args) {
